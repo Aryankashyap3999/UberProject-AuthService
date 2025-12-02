@@ -27,7 +27,7 @@ public class JwtService implements CommandLineRunner {
         return Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
     }
 
-    private String generateToken(Map<String, Object> payload, String email) {
+    public String generateToken(Map<String, Object> payload, String email) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiry);
         final Key key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
@@ -42,7 +42,11 @@ public class JwtService implements CommandLineRunner {
                 .compact();
     }
 
-    private Claims extractAllPayloads(String token) {
+    public String generateToken(String email) {
+        return generateToken(new HashMap<>(), email);
+    }
+
+    public Claims extractAllPayloads(String token) {
         return Jwts
                 .parser()
                 .setSigningKey(getSignKey())
@@ -56,30 +60,30 @@ public class JwtService implements CommandLineRunner {
         return claimsResolver.apply(claims);
     }
 
-    private Date extractExpiration(String token) {
+    public Date extractExpiration(String token) {
         return extractClaims(token, Claims::getExpiration);
     }
 
-    private Boolean isTokenExpired(String token) {
+    public Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
-    private String extractEmail(String token) {
+    public String extractEmail(String token) {
         return extractClaims(token, Claims::getSubject);
     }
 
-    private Boolean validateToken(String token, String email) {
+    public Boolean validateToken(String token, String email) {
         final String userEmailFetchedFromToken = extractEmail(token);
         return (userEmailFetchedFromToken.equals(email) && !isTokenExpired(token));
     }
 
-    private String extractPhoneNumber(String token) {
+    public String extractPhoneNumber(String token) {
         Claims claims = extractAllPayloads(token);
         String phoneNumber = (String) claims.get("phoneNumber");
         return phoneNumber;
     }
 
-    private Object extractPayload(String token, String payloadKey) {
+    public Object extractPayload(String token, String payloadKey) {
         Claims claims = extractAllPayloads(token);
         return (Object) claims.get(payloadKey);
 
